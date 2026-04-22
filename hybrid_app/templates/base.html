@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Trezor Analyzer Hybrid</title>
+  <script src="/static/app-shell.js?v=phase5"></script>
+  <script src="https://unpkg.com/htmx.org@1.9.12"></script>
+  <script defer src="https://unpkg.com/alpinejs@3.14.0/dist/cdn.min.js"></script>
+  <link rel="stylesheet" href="/static/styles.css?v=mysql-dash1">
+</head>
+<body>
+  {% set current_path = request.url.path %}
+  <div class="app-shell">
+    <aside class="app-sidebar">
+      <div class="app-sidebar__brand">
+        <strong>Trezor LOG Analyzer</strong>
+        <span class="muted">Factory analytics</span>
+      </div>
+      <nav class="app-sidebar__nav">
+        <button type="button" class="sidebar-nav-link {% if current_path == '/' %}is-active{% endif %}" onclick="location.assign('/')">Run</button>
+        <button type="button" class="sidebar-nav-link {% if current_path.startswith('/dashboard') or current_path.startswith('/runs') %}is-active{% endif %}" onclick="location.assign('/dashboard')">Dashboard</button>
+        <div class="app-sidebar__utilities">
+          <button type="button" id="theme-toggle" class="theme-toggle">Dark mode</button>
+          <button type="button" id="app-info-open" class="theme-toggle btn-secondary" title="Application version and environment">Info</button>
+        </div>
+        {% if auth_enabled() %}
+        {% if request.session.get('hybrid_user') %}
+        <form method="post" action="/logout" style="display:inline; margin:0;">
+          <button type="submit" class="theme-toggle">Log out ({{ request.session.get('hybrid_user') }})</button>
+        </form>
+        {% else %}
+        <button type="button" class="sidebar-nav-link" onclick="location.assign('/login')">Log in</button>
+        {% endif %}
+        {% endif %}
+      </nav>
+    </aside>
+    <div class="app-main">
+      <main class="container app-main__content shell-stack">
+        {% block content %}{% endblock %}
+      </main>
+    </div>
+  </div>
+  <dialog id="app-info-dialog" class="run-error-dialog" aria-labelledby="app-info-dialog-title">
+    <div class="run-error-dialog__inner">
+      <div class="run-error-dialog__header">
+        <strong id="app-info-dialog-title" class="run-error-dialog__title">Application info</strong>
+        <button type="button" class="run-error-dialog__close" id="app-info-close" aria-label="Close">×</button>
+      </div>
+      <div class="app-info-dialog__content">
+        <p><strong>Application:</strong> Trezor LOG Analyzer</p>
+        <p><strong>Version:</strong> {{ app_version or "unknown" }}</p>
+        <p><strong>Environment:</strong> Hybrid web UI</p>
+      </div>
+    </div>
+  </dialog>
+  <dialog id="run-error-dialog" class="run-error-dialog" aria-labelledby="run-error-dialog-title">
+    <div class="run-error-dialog__inner">
+      <div class="run-error-dialog__header">
+        <strong id="run-error-dialog-title" class="run-error-dialog__title">Error log</strong>
+        <button type="button" class="run-error-dialog__close" id="run-error-dialog-close" aria-label="Close">×</button>
+      </div>
+      <pre id="run-error-dialog-pre" class="run-error-dialog__pre"></pre>
+    </div>
+  </dialog>
+  <div id="global-loading" class="global-loading" aria-live="polite" aria-busy="false" aria-hidden="true">
+    <div class="global-loading__card" role="status">
+      <div class="global-loading__spinner" aria-hidden="true"></div>
+      <div id="global-loading-text" class="global-loading__text">Loading data...</div>
+    </div>
+  </div>
+  <div id="app-toasts" class="app-toasts" aria-live="polite" aria-atomic="false"></div>
+  <!-- Plotly loaded once; HTMX-swapped partials skip external script src reliably -->
+  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+  <script src="/static/chart-fullscreen.js"></script>
+  <script src="/static/app-pages.js?v=phase5"></script>
+</body>
+</html>

@@ -1,0 +1,300 @@
+{% extends "base.html" %}
+{% from "macros/ui.html" import info_tip %}
+{% block content %}
+{% if not run %}
+<section class="card panel">
+  <h1>Run not found</h1>
+  <p>This run id does not exist.</p>
+  <button type="button" class="btn-secondary run-detail-back-btn" onclick="location.assign('/dashboard')">Back to dashboard</button>
+</section>
+{% else %}
+<section class="card panel">
+  <div class="shell-header">
+    <p class="shell-eyebrow">Overview</p>
+    <h1 class="shell-title">Run detail</h1>
+  </div>
+  <p><strong>ID:</strong> {{ run.id }}</p>
+  <p><strong>Created:</strong> {{ run.created_at }}</p>
+  <p><strong>Status:</strong> {{ run.status }}</p>
+  <p><strong>Path:</strong> {{ run.request.path }}{% if run.request.data_source == 'mysql' %} <span class="muted">(MySQL/MariaDB)</span>{% endif %}</p>
+  {% if run.request.data_source == 'mysql' and run.request.db_username %}
+  <p class="muted"><strong>DB user:</strong> {{ run.request.db_username }}{% if run.request.db_profile == 'manufacturing' %} · <strong>Profile:</strong> Manufacturing (PCB, end_test){% elif run.request.db_profile == 'pegatron' %} · <strong>Profile:</strong> Pegatron{% endif %}</p>
+  {% endif %}
+  {% if run.request.data_source == 'mysql' %}
+  <p class="muted"><strong>DB row limit:</strong> {{ run.request.mysql_row_limit }}</p>
+  {% endif %}
+  {% if run.error %}<p><strong>Error:</strong> {{ run.error }}</p>{% endif %}
+  {% if run.summary %}
+  <form
+    class="export-run-full-form"
+    method="get"
+    action="/runs/{{ run.id }}/export"
+  >
+    <input type="hidden" name="mode" value="full" />
+    <label class="inline-control export-run-full-form__field">
+      <span class="muted">File</span>
+      <select name="export_type">
+        <option value="detail">Detailed CSV</option>
+        <option value="simple">Simple CSV</option>
+        <option value="summary">Summary CSV</option>
+      </select>
+    </label>
+    <label class="inline-control export-run-full-form__field">
+      <span class="muted">Rows</span>
+      <select name="status_filter">
+        <option value="all">All</option>
+        <option value="ok">OK only</option>
+        <option value="nok">NOK only</option>
+      </select>
+    </label>
+    <button type="submit" class="btn-primary export-run-full-form__submit">Export full run</button>
+  </form>
+  <p class="muted">Selection-based export is available in the Detailed analysis section below (same file and OK/NOK filters).</p>
+  {% endif %}
+  <button type="button" class="btn-secondary run-detail-back-btn" onclick="location.assign('/dashboard')">Back to dashboard</button>
+</section>
+
+{% if run.summary %}
+  <section class="card panel detail-tabs-card">
+    <div class="detail-tabs" role="tablist" aria-label="Run detail sections">
+      <button type="button" class="detail-tab is-active" data-detail-tab="analysis">Analysis</button>
+      <button type="button" class="detail-tab" data-detail-tab="sn">SN metadata</button>
+    </div>
+  </section>
+
+  <section class="card panel detail-panel" data-detail-panel="sn" hidden>
+    <div class="shell-header">
+      <p class="shell-eyebrow">SN detail</p>
+    <h2 class="shell-title">Metadata by SN</h2>
+    </div>
+    <p class="muted">Enter a serial number to display metadata from all testers/stations in this run.</p>
+    <form
+      class="sn-metadata-form"
+      hx-get="/runs/{{ run.id }}/metadata-sn"
+      hx-target="#sn-metadata-results"
+      hx-swap="innerHTML"
+    >
+      <div class="grid" style="align-items: end; gap: 1rem;">
+        <label style="margin: 0;">
+          SN
+          <input type="text" name="sn" placeholder="e.g. ABC123" autocomplete="off" />
+        </label>
+        <button type="submit" class="btn-primary">Search</button>
+      </div>
+    </form>
+    <div id="sn-metadata-results" class="sn-metadata-results"></div>
+  </section>
+
+  <section class="card panel detail-panel" data-detail-panel="analysis">
+    <div class="shell-header">
+      <p class="shell-eyebrow">Quick filters</p>
+      <h2 class="shell-title">Analytical workflow (logs-first)</h2>
+    </div>
+    <p class="muted">Selection guide {{ info_tip("1) KPI + alerts → 2) failures + charts → 3) limits + SN metadata. What next: pick tester type, refine tests/stations, then press Compute. Choose tester type, tests, and stations independently. Press Compute (or Enter) to refresh KPI, limits, top failures, and charts.") }}</p>
+    <p class="muted">Initial overview for the full run (without selection filters):</p>
+    {% set total_all = (overview_summary.total_rows if overview_summary else run.summary.total_rows) %}
+    {% set ok_all = (overview_summary.ok_rows if overview_summary else run.summary.ok_rows) %}
+    {% set nok_all = (overview_summary.nok_rows if overview_summary else run.summary.nok_rows) %}
+    {% set fail_rate_all = ((nok_all / total_all) * 100) if total_all else 0 %}
+    {% set yield_all = (overview_summary.yield_pct if overview_summary else run.summary.yield_pct) %}
+
+    <p class="kpi-row-title">Quality</p>
+    <div class="kpi-grid kpi-grid--5">
+      <div class="kpi">
+        <div class="kpi-head"><span>Total</span><span class="kpi-icon">#</span></div>
+        <strong>{{ total_all }}</strong>
+        <small class="kpi-sub">Analyzed units</small>
+      </div>
+      <div class="kpi">
+        <div class="kpi-head"><span>OK</span><span class="kpi-icon">+</span></div>
+        <strong>{{ ok_all }}</strong>
+        <small class="kpi-sub">Status OK</small>
+      </div>
+      <div class="kpi">
+        <div class="kpi-head"><span>NOK</span><span class="kpi-icon">!</span></div>
+        <strong>{{ nok_all }}</strong>
+        <small class="kpi-sub">Status NOK</small>
+      </div>
+      <div class="kpi">
+        <div class="kpi-head"><span>Yield</span><span class="kpi-icon">%</span></div>
+        <strong>{{ "%.2f"|format(yield_all) }}%</strong>
+        <small class="kpi-sub">First-pass quality</small>
+        {% if yield_all >= 95 %}
+        <span class="kpi-badge kpi-badge-success">Healthy</span>
+        {% elif yield_all >= 85 %}
+        <span class="kpi-badge kpi-badge-warning">Watch</span>
+        {% else %}
+        <span class="kpi-badge kpi-badge-error">Risk</span>
+        {% endif %}
+      </div>
+      <div class="kpi">
+        <div class="kpi-head"><span>Fail rate</span><span class="kpi-icon">!</span></div>
+        <strong>{{ "%.2f"|format(fail_rate_all) }}%</strong>
+        <small class="kpi-sub">Share of NOK units</small>
+      </div>
+    </div>
+
+    {% if facets and facets.kinds %}
+    <script type="application/json" id="selection-facets-json">{{ facets | tojson }}</script>
+    <form
+      id="detail-filter"
+      data-run-id="{{ run.id }}"
+      class="quick-filters-sticky"
+      data-no-loading="true"
+    >
+      <div class="filter-checkbox-grid filter-checkbox-grid--3 filter-checkbox-grid--enhanced">
+        <div class="filter-checkbox-column">
+          <div class="filter-checkbox-column-head">
+            <span class="filter-checkbox-title">1. Tester type</span>
+            <span class="filter-checkbox-actions">
+              <button type="button" class="filter-action-btn" data-action="kinds-all">All</button>
+              <button type="button" class="filter-action-btn btn-secondary" data-action="kinds-none">None</button>
+            </span>
+          </div>
+          <div class="filter-checkbox-list" id="kinds-panel" role="group" aria-label="Tester type">
+            {% for k in facets.kinds %}
+            <label class="filter-checkbox-row">
+              <input type="checkbox" data-role="kind" value="{{ k|e }}" />
+              <span class="filter-checkbox-label">{{ k }}</span>
+            </label>
+            {% endfor %}
+          </div>
+        </div>
+        <div class="filter-checkbox-column">
+          <div class="filter-checkbox-column-head">
+            <span class="filter-checkbox-title">2. Tests</span>
+            <span class="filter-checkbox-actions">
+              <button type="button" class="filter-action-btn" data-action="tests-all">All</button>
+              <button type="button" class="filter-action-btn btn-secondary" data-action="tests-none">None</button>
+            </span>
+          </div>
+          <label class="filter-search-label" for="tests-search-input" style="margin: 0 0 8px;">
+            <span class="muted">Search test</span>
+            <input type="search" id="tests-search-input" placeholder="Type part of test name..." autocomplete="off" />
+          </label>
+          <div class="filter-checkbox-list" id="tests-panel" role="group" aria-label="Testy"></div>
+        </div>
+        <div class="filter-checkbox-column">
+          <div class="filter-checkbox-column-head">
+            <span class="filter-checkbox-title">3. Stations</span>
+            <span class="filter-checkbox-actions">
+              <button type="button" class="filter-action-btn" data-action="stations-all">All</button>
+              <button type="button" class="filter-action-btn btn-secondary" data-action="stations-none">None</button>
+            </span>
+          </div>
+          <div class="filter-checkbox-list" id="stations-panel" role="group" aria-label="Stations"></div>
+        </div>
+      </div>
+
+      <div class="form-actions filter-actions-row">
+        <button type="submit" class="btn-primary">Compute</button>
+        <span class="export-links filter-export-group">
+          <label style="margin: 0;">
+            <span class="muted">File</span>
+            <select id="export-kind-sel" style="margin-left: 0.35rem;">
+              <option value="detail">Detailed CSV</option>
+              <option value="simple">Simple CSV</option>
+              <option value="summary">Summary CSV</option>
+            </select>
+          </label>
+          <label style="margin: 0;">
+            <span class="muted">Rows</span>
+            <select id="export-status-sel" style="margin-left: 0.35rem;">
+              <option value="all">All</option>
+              <option value="ok">OK only</option>
+              <option value="nok">NOK only</option>
+            </select>
+          </label>
+          <button type="button" class="btn-secondary" id="export-csv-btn">Export CSV</button>
+        </span>
+      </div>
+    </form>
+    {% else %}
+    <form
+      id="detail-filter"
+      data-run-id="{{ run.id }}"
+      class="quick-filters-sticky"
+      data-no-loading="true"
+    >
+      <p class="muted" style="margin-top: 0;">Default: no tests selected, all stations selected (facet cache unavailable).</p>
+      <div class="filter-checkbox-grid filter-checkbox-grid--enhanced">
+        <div class="filter-checkbox-column">
+          <div class="filter-checkbox-column-head">
+            <span class="filter-checkbox-title">Tests</span>
+            <span class="filter-checkbox-actions">
+              <button type="button" class="filter-action-btn" data-action="tests-all" title="Select all tests">All</button>
+              <button type="button" class="filter-action-btn btn-secondary" data-action="tests-none" title="Clear all tests">None</button>
+            </span>
+          </div>
+          <label class="filter-search-label" for="tests-search-input-fallback" style="margin: 0 0 8px;">
+            <span class="muted">Search test</span>
+            <input type="search" id="tests-search-input-fallback" placeholder="Type part of test name..." autocomplete="off" />
+          </label>
+          <div class="filter-checkbox-list" role="group" aria-label="Test selection">
+            {% for t in run.summary.tests %}
+            <label class="filter-checkbox-row">
+              <input type="checkbox" name="tests" value="{{ t|e }}" />
+              <span class="filter-checkbox-label" data-test-raw="{{ t|e }}">{{ t }}</span>
+            </label>
+            {% endfor %}
+          </div>
+        </div>
+        <div class="filter-checkbox-column">
+          <div class="filter-checkbox-column-head">
+            <span class="filter-checkbox-title">Stations</span>
+            <span class="filter-checkbox-actions">
+              <button type="button" class="filter-action-btn" data-action="stations-all" title="Select all stations">All</button>
+              <button type="button" class="filter-action-btn btn-secondary" data-action="stations-none" title="Clear station filter">None</button>
+            </span>
+          </div>
+          <div class="filter-checkbox-list" role="group" aria-label="Station selection">
+            {% for s in run.summary.stations %}
+            <label class="filter-checkbox-row">
+              <input type="checkbox" name="stations" value="{{ s|e }}" checked />
+              <span class="filter-checkbox-label">{{ s }}</span>
+            </label>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+
+      <div class="form-actions filter-actions-row">
+        <button type="submit">Compute</button>
+        <span class="export-links filter-export-group">
+          <label style="margin: 0;">
+            <span class="muted">File</span>
+            <select id="export-kind-sel" style="margin-left: 0.35rem;">
+              <option value="detail">Detailed CSV</option>
+              <option value="simple">Simple CSV</option>
+              <option value="summary">Summary CSV</option>
+            </select>
+          </label>
+          <label style="margin: 0;">
+            <span class="muted">Rows</span>
+            <select id="export-status-sel" style="margin-left: 0.35rem;">
+              <option value="all">All</option>
+              <option value="ok">OK only</option>
+              <option value="nok">NOK only</option>
+            </select>
+          </label>
+          <button type="button" class="btn-secondary" id="export-csv-btn">Export CSV</button>
+        </span>
+      </div>
+    </form>
+    {% endif %}
+  </section>
+
+  <div id="analysis-results" class="callout empty-state detail-panel" data-detail-panel="analysis">
+    <p class="muted">Results for the current selection are not loaded yet.</p>
+  </div>
+
+{% else %}
+  <section class="card panel">
+    <h2>Run is not finished yet</h2>
+    <p>Detailed analysis will appear after the run finishes.</p>
+  </section>
+{% endif %}
+{% if run.summary %}
+{% endif %}
+{% endif %}
+{% endblock %}

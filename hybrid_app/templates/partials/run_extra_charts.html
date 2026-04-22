@@ -1,0 +1,59 @@
+{% if error %}
+<div class="callout callout-error">
+  <p class="muted">{{ error }}</p>
+  <p class="next-step">Next step: check test/station selection and chart type, then press <strong>Show chart</strong>.</p>
+</div>
+{% else %}
+{% if scatter_charts is defined and scatter_charts %}
+{% for sc in scatter_charts %}
+<section class="card scatter-block" style="margin-top: 12px;">
+  <h3 style="margin:0 0 8px; font-size: 1rem;">{{ sc.station }} — {{ sc.test }}</h3>
+  <div class="chart-panel" data-chart-panel>
+    <button type="button" class="chart-fullscreen-btn" title="Fullscreen" aria-label="Fullscreen">⛶</button>
+    <div id="scatter-plot-{{ loop.index0 }}" class="chart-plot-area" style="min-height: 320px;"></div>
+  </div>
+  <script type="application/json" class="js-plotly-json" data-target-id="scatter-plot-{{ loop.index0 }}">{{ sc.figure_json | safe }}</script>
+</section>
+{% endfor %}
+{% elif chart_json is defined and chart_json %}
+<div class="chart-panel" data-chart-panel>
+  <button type="button" class="chart-fullscreen-btn" title="Fullscreen" aria-label="Fullscreen">⛶</button>
+  <div id="extra-chart-plot" class="chart-plot-area" style="min-height: 360px;"></div>
+</div>
+<script type="application/json" class="js-plotly-json" data-target-id="extra-chart-plot">{{ chart_json | safe }}</script>
+<p class="muted" style="margin-top: 8px;">⛶ = fullscreen (ESC to exit).</p>
+{% else %}
+<div class="empty-state">
+  <p class="muted">No chart is available for the selected combination.</p>
+  <p class="next-step">Next step: change chart type or broaden test/station filters.</p>
+</div>
+{% endif %}
+{% if pearson is defined and pearson is not none %}
+<p class="muted" style="margin-top: 12px;"><strong>Pearson r:</strong> {{ "%.4f"|format(pearson) }}</p>
+{% endif %}
+{% if hist_stats is defined and hist_stats %}
+<p class="kpi-row-title" style="margin-top: 12px;">Distribution summary</p>
+<div class="kpi-grid">
+  <div class="kpi">
+    <div class="kpi-head"><span>Mean</span><span class="kpi-icon">M</span></div>
+    <strong>{{ "%.4f"|format(hist_stats.mean) }}</strong>
+    <small class="kpi-sub">Mean value</small>
+  </div>
+  <div class="kpi">
+    <div class="kpi-head"><span>Std. dev.</span><span class="kpi-icon">S</span></div>
+    <strong>{{ "%.4f"|format(hist_stats.std) }}</strong>
+    <small class="kpi-sub">Standard deviation</small>
+  </div>
+  <div class="kpi">
+    <div class="kpi-head"><span>Min</span><span class="kpi-icon">-</span></div>
+    <strong>{{ "%.4f"|format(hist_stats.min) }}</strong>
+    <small class="kpi-sub">Lower bound</small>
+  </div>
+  <div class="kpi">
+    <div class="kpi-head"><span>Max</span><span class="kpi-icon">+</span></div>
+    <strong>{{ "%.4f"|format(hist_stats.max) }}</strong>
+    <small class="kpi-sub">Upper bound</small>
+  </div>
+</div>
+{% endif %}
+{% endif %}

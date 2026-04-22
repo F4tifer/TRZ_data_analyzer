@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block content %}
+{% set total_runs = stats.total %}
+{% set success_runs = stats.by_status.get('success', 0) %}
+{% set failed_runs = stats.by_status.get('failed', 0) %}
+
+<section class="card panel">
+  <div class="shell-header">
+    <p class="shell-eyebrow">Operations overview</p>
+    <h1 class="shell-title">Dashboard</h1>
+  </div>
+  <p class="helper-text">Track runs, filter scope, and open details for deeper analysis.</p>
+  <p class="next-step"><strong>What next:</strong> choose a run from history, then open <strong>Detail</strong> to compute focused analytics.</p>
+  <div
+    id="dashboard-kpis"
+    hx-get="/partials/dashboard-kpis"
+    hx-trigger="load, every 12s [document.visibilityState === 'visible'], refresh"
+    hx-swap="innerHTML"
+  >
+    {% include "partials/dashboard_kpis.html" %}
+  </div>
+</section>
+
+<section class="card panel table-card">
+  <div class="shell-header">
+    <p class="shell-eyebrow">Main analysis area</p>
+    <h2 class="shell-title">Run history</h2>
+  </div>
+  <p class="muted">Use filters first, then work with the selected run. Delete removes row, DB entry, and cache.</p>
+  <section class="callout panel" style="margin-bottom: 1rem;">
+    <h3 style="margin-top: 0;">Cross-run SN search (MVP)</h3>
+    <p class="muted" style="margin-top: 0.4rem;">
+      Select multiple runs in the table, then search one SN across all selected runs (for example same SN in multiple DBs).
+    </p>
+    <form
+      id="multi-sn-form"
+      hx-get="/runs/multi-sn"
+      hx-target="#multi-sn-results"
+      hx-swap="innerHTML"
+      class="phase1-filter-form"
+      style="display:flex; gap:0.75rem; align-items:end; flex-wrap:wrap;"
+    >
+      <input type="hidden" id="multi-run-ids-hidden" value="" />
+      <label style="margin:0;">
+        SN
+        <input type="text" id="multi-sn-input" name="sn" placeholder="e.g. ABC123" autocomplete="off" />
+      </label>
+      <button type="submit" class="btn-primary">Search across selected runs</button>
+      <button type="button" class="btn-secondary" id="multi-sn-export-btn">Export merged CSV</button>
+      <button type="button" class="btn-secondary" id="multi-analysis-open-btn">Open merged analysis (KPI + charts)</button>
+      <span class="muted" id="multi-run-selection-count">Selected runs: 0</span>
+    </form>
+    <div id="multi-sn-results" style="margin-top: 1rem;"></div>
+  </section>
+  <form id="runs-filter" class="phase1-filter-form"
+        hx-get="/partials/runs"
+        hx-target="#runs-table"
+        hx-swap="innerHTML"
+        hx-trigger="change, keyup delay:300ms from:find select, keyup delay:300ms from:find input[name=q]">
+    <input type="hidden" name="page" value="{{ page }}" id="page-input" />
+    <input type="hidden" name="page_size" value="{{ page_size }}" />
+    <input type="hidden" name="pagination_base" value="/dashboard" />
+    <label>
+      Status
+      <select name="status">
+        <option value="all" {% if status == "all" %}selected{% endif %}>all</option>
+        <option value="queued" {% if status == "queued" %}selected{% endif %}>queued</option>
+        <option value="running" {% if status == "running" %}selected{% endif %}>running</option>
+        <option value="success" {% if status == "success" %}selected{% endif %}>success</option>
+        <option value="failed" {% if status == "failed" %}selected{% endif %}>failed</option>
+      </select>
+    </label>
+    <label>
+      Path contains
+      <input type="text" name="q" value="{{ q }}" placeholder="FTP_SYNC / station / folder">
+    </label>
+  </form>
+  <div
+    id="runs-table"
+    hx-get="/partials/runs"
+    hx-include="#runs-filter"
+    hx-trigger="load, every 12s [document.visibilityState === 'visible'], refresh"
+    hx-swap="innerHTML"
+    aria-live="polite"
+  >
+    {% include "partials/runs_table.html" %}
+  </div>
+</section>
+
+{% endblock %}

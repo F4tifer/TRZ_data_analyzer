@@ -1,0 +1,48 @@
+{% if error %}
+<p class="callout">{{ error }}</p>
+{% else %}
+<p class="muted">
+  SN <strong>{{ sn }}</strong> across selected runs:
+  <strong>{{ matched_runs }}</strong> matched / <strong>{{ selected_runs }}</strong> selected.
+</p>
+{% if skipped_runs %}
+<p class="muted">Skipped not-ready runs: {{ skipped_runs | join(", ") }}</p>
+{% endif %}
+<div class="table-scroll">
+  <table class="runs-table">
+    <thead>
+      <tr>
+        <th>Run ID</th>
+        <th>Created</th>
+        <th>Source</th>
+        <th>Profile</th>
+        <th>Station</th>
+        <th>Test</th>
+        <th>Value</th>
+        <th>Status</th>
+        <th>Date</th>
+        <th>Path / DB</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in rows %}
+      <tr>
+        <td>{{ row.run_id }}</td>
+        <td>{{ row.created_at }}</td>
+        <td>{{ row.source_type }}</td>
+        <td>{{ row.db_profile or "-" }}</td>
+        <td>{{ row.station or "-" }}</td>
+        <td>{{ row.test }}</td>
+        <td>{{ row.value }}</td>
+        <td>{{ row.status or "-" }}</td>
+        <td>{{ row.date or "-" }}</td>
+        <td class="cell-path" title="{{ row.source_path }}">{{ row.source_path }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% if truncated %}
+<p class="muted">Preview is limited to the first 1000 rows per run. Use Export merged CSV for full output.</p>
+{% endif %}
+{% endif %}

@@ -1,0 +1,229 @@
+{% from "macros/ui.html" import info_tip %}
+{% if error %}
+<div class="callout callout-error">
+  <strong>Error:</strong> {{ error }}
+  <p class="next-step">Next step: adjust test/station selection and run <strong>Compute</strong> again.</p>
+</div>
+{% else %}
+<section class="card panel">
+  <div class="shell-header">
+    <p class="shell-eyebrow">Selection analytics</p>
+    <h2 class="shell-title">Selection KPI</h2>
+  </div>
+  <form id="kpi-drilldown-filters">
+    {% for test_name in selected_tests or [] %}
+    <input type="hidden" name="tests" value="{{ test_name }}">
+    {% endfor %}
+    {% for station_name in selected_stations or [] %}
+    <input type="hidden" name="stations" value="{{ station_name }}">
+    {% endfor %}
+  </form>
+  {% set fail_rate = ((nok_count / total_count) * 100) if total_count else 0 %}
+  <p class="kpi-row-title">Quality</p>
+  <div class="kpi-grid kpi-grid--5">
+    <button
+      type="button"
+      class="kpi kpi-drilldown-btn"
+      hx-get="/runs/{{ run_id }}/kpi-sn-list?bucket=total"
+      hx-include="#kpi-drilldown-filters"
+      hx-target="#kpi-drilldown-results"
+      hx-swap="innerHTML"
+    >
+      <div class="kpi-head"><span>Total</span><span class="kpi-icon">#</span></div>
+      <strong>{{ total_count }}</strong>
+      <small class="kpi-sub">Analyzed units - click for details</small>
+    </button>
+    <button
+      type="button"
+      class="kpi kpi-drilldown-btn"
+      hx-get="/runs/{{ run_id }}/kpi-sn-list?bucket=ok"
+      hx-include="#kpi-drilldown-filters"
+      hx-target="#kpi-drilldown-results"
+      hx-swap="innerHTML"
+    >
+      <div class="kpi-head"><span>OK</span><span class="kpi-icon">+</span></div>
+      <strong>{{ ok_count }}</strong>
+      <small class="kpi-sub">Status OK - click for SN list</small>
+    </button>
+    <button
+      type="button"
+      class="kpi kpi-drilldown-btn"
+      hx-get="/runs/{{ run_id }}/kpi-sn-list?bucket=nok"
+      hx-include="#kpi-drilldown-filters"
+      hx-target="#kpi-drilldown-results"
+      hx-swap="innerHTML"
+    >
+      <div class="kpi-head"><span>NOK</span><span class="kpi-icon">!</span></div>
+      <strong>{{ nok_count }}</strong>
+      <small class="kpi-sub">Status NOK - click for SN list</small>
+    </button>
+    <div class="kpi">
+      <div class="kpi-head"><span>Yield</span><span class="kpi-icon">%</span></div>
+      <strong>{{ "%.2f"|format(yield_pct) }}%</strong>
+      <small class="kpi-sub">First-pass quality</small>
+      {% if yield_pct >= 95 %}
+      <span class="kpi-badge kpi-badge-success">Healthy</span>
+      {% elif yield_pct >= 85 %}
+      <span class="kpi-badge kpi-badge-warning">Watch</span>
+      {% else %}
+      <span class="kpi-badge kpi-badge-error">Risk</span>
+      {% endif %}
+    </div>
+    <div class="kpi">
+      <div class="kpi-head"><span>Fail rate</span><span class="kpi-icon">!</span></div>
+      <strong>{{ "%.2f"|format(fail_rate) }}%</strong>
+      <small class="kpi-sub">Share of NOK units</small>
+    </div>
+  </div>
+  <div id="kpi-drilldown-results" class="kpi-drilldown-slot"></div>
+</section>
+
+<section class="card panel">
+  <div class="shell-header">
+    <p class="shell-eyebrow">Limits editor</p>
+    <h2 class="shell-title">Limits (LSL / USL)</h2>
+  </div>
+  <p class="muted">Limits info {{ info_tip("Global defaults come from tests configuration. Any edits here are temporary for this run and this user session only; they do not affect other users or other runs.") }}</p>
+  <div id="limits-save-msg"></div>
+  <div class="form-actions" style="margin-bottom: 12px;">
+    <form
+      hx-post="/runs/{{ run_id }}/limits/ai"
+      hx-include="#detail-filter"
+      hx-target="#limits-save-msg"
+      hx-swap="innerHTML"
+    >
+      <label class="inline-control">
+        <span class="muted">AI limits</span>
+        <select name="ai_method">
+          <option value="IQR">IQR (Tukey)</option>
+          <option value="Sigma">Sigma (3σ)</option>
+          <option value="Iso">Isolation Forest</option>
+        </select>
+      </label>
+      <button type="submit" class="btn-secondary">Compute AI limits</button>
+    </form>
+  </div>
+  <form
+    class="limits-save-form"
+    hx-post="/runs/{{ run_id }}/limits"
+    hx-target="#limits-save-msg"
+    hx-swap="innerHTML"
+  >
+    <div class="table-scroll">
+      <table class="limits-edit-table">
+        <thead>
+          <tr>
+            <th>Test</th>
+            <th>LSL</th>
+            <th>USL</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in limits_rows %}
+          <tr>
+            <td class="cell-path limits-test-name" title="{{ row.test }}">
+              {{ row.test }}
+              <input type="hidden" name="limit_test_{{ loop.index0 }}" value="{{ row.test }}" />
+            </td>
+            <td>
+              <input type="number" step="any" name="limit_lsl_{{ loop.index0 }}" value="{{ row.lo }}" />
+            </td>
+            <td>
+              <input type="number" step="any" name="limit_usl_{{ loop.index0 }}" value="{{ row.hi }}" />
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="btn-primary">Apply limits (this run only)</button>
+    </div>
+  </form>
+  <form
+    class="limits-reset-form"
+    hx-post="/runs/{{ run_id }}/limits/reset"
+    hx-target="#limits-save-msg"
+    hx-swap="innerHTML"
+  >
+    {% for row in limits_rows %}
+    <input type="hidden" name="limit_test_{{ loop.index0 }}" value="{{ row.test }}" />
+    {% endfor %}
+    <div class="form-actions">
+      <button type="submit" class="btn-secondary">Reset run-specific limits for these tests</button>
+    </div>
+  </form>
+</section>
+<section class="card panel">
+  <div class="shell-header">
+    <p class="shell-eyebrow">Failure breakdown</p>
+    <h2 class="shell-title">Top failures</h2>
+  </div>
+  <table>
+    <thead><tr><th>Test</th><th>Count</th></tr></thead>
+    <tbody>
+      {% if top_failures and top_failures|length > 0 %}
+        {% for test, count in top_failures.items() %}
+        <tr>
+          <td>
+            <button
+              type="button"
+              class="btn-secondary"
+              hx-get="/runs/{{ run_id }}/failure-sn-list?test={{ test|urlencode }}"
+              hx-include="#kpi-drilldown-filters"
+              hx-target="#failure-drilldown-results"
+              hx-swap="innerHTML"
+              title="Show SN list for this failure"
+            >
+              {{ test }}
+            </button>
+          </td>
+          <td>{{ count }}</td>
+        </tr>
+        {% endfor %}
+      {% else %}
+        <tr><td colspan="2">
+          <div class="empty-state">
+            <p class="muted">No NOK failures in this selection.</p>
+            <p class="next-step">Next step: broaden filters or open trend/histogram for deeper analysis.</p>
+          </div>
+        </td></tr>
+      {% endif %}
+    </tbody>
+  </table>
+  <div id="failure-drilldown-results" class="callout" style="margin-top: 12px;">
+    <p class="muted">Click a failure name to list exact units (SN) where it occurred.</p>
+  </div>
+</section>
+
+<section class="card panel">
+  <div class="shell-header">
+    <p class="shell-eyebrow">Charts</p>
+    <h2 class="shell-title">Charts</h2>
+  </div>
+  <p class="muted" style="margin-bottom: 8px;">Use <strong>⛶</strong> in chart corner for fullscreen (ESC to exit).</p>
+  {% if charts and (charts.get('pareto') or charts.get('pie')) %}
+    {# Plotly JSON rendered by chart-fullscreen.js after htmx:afterSettle. #}
+    <textarea id="run-detail-charts-json" hidden readonly class="run-detail-charts-json" aria-hidden="true">{{ charts|default({})|tojson }}</textarea>
+    <div id="chart-render-fallback" class="empty-state chart-fallback is-loading" role="status" aria-live="polite">
+      <p class="muted chart-fallback-loading">Loading charts...</p>
+      <p class="muted chart-fallback-error" hidden>Charts could not be rendered.</p>
+      <p class="next-step chart-fallback-error" hidden>Next step: refresh the page or adjust filters and run Compute again.</p>
+    </div>
+    <div class="chart-panel" data-chart-panel>
+      <button type="button" class="chart-fullscreen-btn" title="Fullscreen" aria-label="Fullscreen">⛶</button>
+      <div id="pareto-chart" class="chart-plot-area" style="min-height: 380px;"></div>
+    </div>
+    <div class="chart-panel" data-chart-panel style="margin-top: 16px;">
+      <button type="button" class="chart-fullscreen-btn" title="Fullscreen" aria-label="Fullscreen">⛶</button>
+      <div id="pie-chart" class="chart-plot-area" style="min-height: 380px;"></div>
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <p class="muted">Charts are not available for the current selection.</p>
+      <p class="next-step">Next step: select more tests or stations with NOK events and run <strong>Compute</strong>.</p>
+    </div>
+  {% endif %}
+</section>
+{% endif %}
+

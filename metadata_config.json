@@ -1,0 +1,139 @@
+{
+  "meta": {
+    "type": "Metadata_Definition",
+    "description": "Definition of static identifiers, versions, and context data for indexing and searching.",
+    "version": "1.0"
+  },
+  "fields": [
+    {
+      "field_name": "SerialNumber",
+      "source": "CSV",
+      "key": "SerialNumber",
+      "description": "Unique Device Identifier",
+      "required": true
+    },
+    {
+      "field_name": "TSRID",
+      "source": "CSV",
+      "key": "TSRID",
+      "description": "Unique Test Run ID (Timestamp based)",
+      "required": true
+    },
+    {
+      "field_name": "Station_ID",
+      "source": "CSV",
+      "key": "Station_ID",
+      "description": "ID of the testing station/computer"
+    },
+    {
+      "field_name": "Fixture_ID",
+      "source": "CSV",
+      "key": "Fixture_ID",
+      "description": "ID of the test fixture (pogo pins bed)"
+    },
+    {
+      "field_name": "Test_Start_Time",
+      "source": "CSV",
+      "key": "Test_Start_Time",
+      "format": "YYYY/MM/DD HH:mm:ss"
+    },
+    {
+      "field_name": "Test_End_Time",
+      "source": "CSV",
+      "key": "Test_End_Time",
+      "format": "YYYY/MM/DD HH:mm:ss"
+    },
+    {
+      "field_name": "Operator_ID",
+      "source": "CSV",
+      "key": "Operator"
+    },
+    {
+      "field_name": "Run_Duration",
+      "source": "CSV",
+      "key": "TcsTestSuiteDuration",
+      "unit": "seconds"
+    },
+    {
+      "field_name": "Firmware_Version",
+      "source": "CSV",
+      "key": "FW_Prodtest_Check",
+      "fallback_source": "Log",
+      "log_file": "FW_prodtest_check.log",
+      "regex": "OK\\s+([0-9.]+)"
+    },
+    {
+      "field_name": "Bootloader_Version",
+      "source": "CSV",
+      "key": "Bootloader_Version_Check",
+      "fallback_source": "Log",
+      "log_file": "bootloader_version_check.log",
+      "regex": "OK\\s+([0-9.]+)"
+    },
+    {
+      "field_name": "Boardloader_Version",
+      "source": "CSV",
+      "key": "Boardloader_Version_Check",
+      "fallback_source": "Log",
+      "log_file": "boardloader_version_check.log",
+      "regex": "OK\\s+([0-9.]+)"
+    },
+    {
+      "field_name": "BLE_Firmware_Version",
+      "source": "CSV",
+      "key": "BLE_FW_Version",
+      "regex": "OK\\s+([0-9.]+)"
+    },
+    {
+      "field_name": "Touch_Firmware_Version",
+      "source": "CSV",
+      "key": "Touch_Version_Check"
+    },
+    {
+      "field_name": "Hardware_ID",
+      "source": "CSV",
+      "key": "HWID_Check"
+    },
+    {
+      "field_name": "Optiga_ID",
+      "source": "Log",
+      "log_file": "OPTIGA_ID_READ.log",
+      "regex": "OK\\s+([A-F0-9]+)"
+    },
+    {
+      "field_name": "Tropic_ID",
+      "source": "Log",
+      "log_file": "tropic_id_read.log",
+      "regex": "OK\\s+([A-F0-9 ]+)"
+    },
+    {
+      "field_name": "CPU_ID",
+      "source": "Log",
+      "log_file": "CPUID_READ.log",
+      "regex": "OK\\s+([A-F0-9]+)"
+    },
+    {
+      "field_name": "BLE_MAC_Address",
+      "source": "Log",
+      "log_file": "BT_MAC_get.log",
+      "regex": "MAC:\\s+([0-9a-f:]+)"
+    },
+    {
+      "field_name": "NFC_UID",
+      "source": "Log",
+      "log_file": "NFC_READ.log",
+      "regex": "UID:\\s+([A-F0-9]+)"
+    },
+    {
+      "field_name": "OTP_Batch_Info",
+      "source": "CSV",
+      "key": "OTP_Batch_Read"
+    },
+    {
+      "field_name": "OTP_Variant_Info",
+      "source": "Log",
+      "log_file": "OTP_variant_read.log",
+      "regex": "OK\\s+([0-9 ]+)"
+    }
+  ]
+}

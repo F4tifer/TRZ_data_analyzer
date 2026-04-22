@@ -1,0 +1,4 @@
+{# Shared help icon — use title tooltips (hover). Pass a short plain-text sentence or two. #}
+{% macro info_tip(title) -%}
+<span class="info-tip" title="{{ title|e }}">i</span>
+{%- endmacro %}

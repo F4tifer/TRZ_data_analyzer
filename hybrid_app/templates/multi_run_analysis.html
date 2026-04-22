@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% from "macros/ui.html" import info_tip %}
+{% block content %}
+<section class="card">
+  <div class="shell-header">
+    <p class="shell-eyebrow">Phase 2</p>
+    <h1 class="shell-title">Merged run analysis</h1>
+  </div>
+  <p><button type="button" class="btn-secondary" onclick="location.assign('/dashboard')">← Back to dashboard</button></p>
+  {% if skipped_runs and skipped_runs|length %}
+  <p class="muted">Skipped (not ready or no data): {{ skipped_runs | join(", ") }}</p>
+  {% endif %}
+  {% if default_tests_truncated %}
+  <p class="muted">
+    No explicit test filter was set: only the first {{ max_tests_cap }} tests (alphabetically) are in scope. Use the checkboxes below to choose any subset.
+  </p>
+  {% endif %}
+</section>
+
+{% if run_ids and run_ids|length %}
+<form
+  id="multi-analysis-filter"
+  method="get"
+  action="/runs/multi-analysis"
+  class="card multi-analysis-scope"
+  style="margin-bottom: 1rem;"
+  data-no-loading="true"
+>
+  {% for rid in run_ids %}
+  <input type="hidden" name="run_ids" value="{{ rid }}">
+  {% endfor %}
+  <div class="shell-header">
+    <p class="shell-eyebrow">Scope</p>
+    <h2 class="shell-title">Tests &amp; stations</h2>
+  </div>
+  <p class="muted" style="margin-top: 0;">
+    Choose which tests and stations to include in KPI, charts, and exports (combined data from all selected runs / DBs).
+    {{ info_tip("Merged scope: narrow tests/stations here first. Pareto/pie need NOK rows in this scope; use Advanced charts for histogram, trend, or correlation.") }}
+  </p>
+  <div class="filter-checkbox-grid filter-checkbox-grid--enhanced">
+    <div class="filter-checkbox-column">
+      <div class="filter-checkbox-column-head">
+        <span class="filter-checkbox-title">Tests</span>
+        <span class="filter-checkbox-actions">
+          <button type="button" class="filter-action-btn" id="multi-tests-all">All</button>
+          <button type="button" class="filter-action-btn btn-secondary" id="multi-tests-none">None</button>
+        </span>
+      </div>
+      <label class="filter-search-label" for="multi-tests-search" style="margin: 0 0 8px;">
+        <span class="muted">Search test</span>
+        <input type="search" id="multi-tests-search" placeholder="Filter list…" autocomplete="off" />
+      </label>
+      <div class="filter-checkbox-list" id="multi-tests-panel" role="group" aria-label="Tests">
+        {% for t in available_tests or [] %}
+        <label class="filter-checkbox-row" data-test-row="{{ t|e }}">
+          <input
+            type="checkbox"
+            name="tests"
+            value="{{ t|e }}"
+            {% if selected_tests is defined and t in selected_tests %}checked{% endif %}
+          />
+          <span class="filter-checkbox-label">{{ t }}</span>
+        </label>
+        {% else %}
+        <p class="muted" style="margin:0;">No tests in merged data.</p>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="filter-checkbox-column">
+      <div class="filter-checkbox-column-head">
+        <span class="filter-checkbox-title">Stations</span>
+        <span class="filter-checkbox-actions">
+          <button type="button" class="filter-action-btn" id="multi-stations-all">All</button>
+          <button type="button" class="filter-action-btn btn-secondary" id="multi-stations-none">None</button>
+        </span>
+      </div>
+      <div class="filter-checkbox-list" id="multi-stations-panel" role="group" aria-label="Stations">
+        {% for s in available_stations or [] %}
+        <label class="filter-checkbox-row">
+          <input
+            type="checkbox"
+            name="stations"
+            value="{{ s|e }}"
+            {% if selected_stations is defined and s in selected_stations %}checked{% endif %}
+          />
+          <span class="filter-checkbox-label">{{ s }}</span>
+        </label>
+        {% else %}
+        <p class="muted" style="margin:0;">No Station column or no values — rows are not filtered by station.</p>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+  <div class="form-actions" style="margin-top: 12px;">
+    <button type="submit">Apply filters</button>
+  </div>
+</form>
+{% endif %}
+
+<div id="analysis-results">
+  {% include "partials/multi_run_detail_results.html" %}
+</div>
+{% endblock %}

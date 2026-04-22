@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="card" style="max-width: 420px; margin: 2rem auto;">
+  <h1>Log in</h1>
+  <p class="muted">Use credentials from environment variables <code>ANALYZER_AUTH_USER</code> and <code>ANALYZER_AUTH_PASSWORD</code>.</p>
+  {% if error %}
+  <div class="callout callout-error">{{ error }}</div>
+  {% endif %}
+  <form method="post" action="/login" class="grid" style="grid-template-columns: 1fr;">
+    <label>
+      Username
+      <input type="text" name="username" autocomplete="username" required>
+    </label>
+    <label>
+      Password
+      <input type="password" name="password" autocomplete="current-password" required>
+    </label>
+    <div class="form-actions">
+      <button type="submit">Log in</button>
+    </div>
+  </form>
+</section>
+{% endblock %}

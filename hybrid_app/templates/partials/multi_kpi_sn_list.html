@@ -1,0 +1,89 @@
+{% if error %}
+<div class="callout callout-error">
+  <p class="muted">{{ error }}</p>
+</div>
+{% else %}
+<div class="shell-header kpi-detail-header">
+  <p class="shell-eyebrow">KPI detail (merged)</p>
+  <h3 class="shell-title" style="font-size: 17px;">{{ title }}</h3>
+  <p class="muted" style="margin-top: 6px;">
+    Total units: <strong>{{ total_rows }}</strong>
+    · tests in filter: <strong>{{ selected_tests_count }}</strong>
+    · stations in filter: <strong>{{ selected_stations_count }}</strong>
+  </p>
+  <div class="form-actions" style="margin-top: 6px;">
+    <button
+      type="button"
+      class="btn-secondary js-drilldown-back"
+      data-target="#multi-kpi-drilldown-results"
+      data-empty-text=""
+    >
+      Back
+    </button>
+  </div>
+</div>
+<div class="table-scroll kpi-detail-table-wrap">
+  <table class="runs-table kpi-detail-table kpi-detail-table-multi">
+    <thead>
+      <tr>
+        <th>Run ID</th>
+        <th>SN</th>
+        <th>Station</th>
+        <th>Test</th>
+        <th>Time</th>
+        <th>Value</th>
+        <th>Error code + Description</th>
+        <th>Status</th>
+        <th>Detail</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% if rows and rows|length > 0 %}
+        {% for row in rows %}
+        <tr>
+          <td class="kpi-col-run">{{ row.run_id }}</td>
+          <td class="kpi-col-sn">{{ row.sn }}</td>
+          <td class="kpi-col-station">{{ row.station }}</td>
+          <td class="kpi-col-test">{{ row.test }}</td>
+          <td class="kpi-col-time">{{ row.time_display or "—" }}</td>
+          <td class="kpi-col-value">{{ row.value }}</td>
+          <td class="kpi-col-error">{{ row.error_info or "—" }}</td>
+          <td class="kpi-col-status">
+            <span class="status-badge {% if row.status == 'OK' %}status-success{% elif row.status == 'NOK' %}status-failed{% endif %}">
+              {{ row.status }}
+            </span>
+          </td>
+          <td>
+            {% if detail_mode %}
+              —
+            {% else %}
+              <button
+                type="button"
+                class="btn-secondary"
+                hx-get="/runs/multi-kpi-sn-list?bucket={{ bucket|urlencode }}&unit_key={{ row.unit_key|urlencode }}"
+                hx-include="#multi-analysis-filter"
+                hx-target="#multi-kpi-drilldown-results"
+                hx-swap="innerHTML"
+              >
+                Run detail
+              </button>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      {% else %}
+      <tr>
+        <td colspan="9">
+          <p class="muted" style="margin: 0;">No records found for this KPI selection.</p>
+        </td>
+      </tr>
+      {% endif %}
+    </tbody>
+  </table>
+</div>
+{% if truncated %}
+<p class="muted" style="margin-top: 8px;">
+  Showing first 500 rows out of {{ total_rows }}.
+</p>
+{% endif %}
+{% endif %}

@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+echo "Running pre-push hook: bumping app version..."
+
+# Detect which version part to bump (major/minor/patch)
+PART="${APP_BUMP_PART:-patch}"
+
+# Bump version in app_version.py
+python3 "$(dirname "$0")/../bump_version.py" --part "$PART"
+
+# If app_version.py changed, commit the new version and fail this push attempt.
+if ! git diff --quiet -- app_version.py; then
+  git add app_version.py
+  git commit -m "chore: bump app version"
+  echo "App version bumped and committed. Please run 'git push' again."
+  exit 1
+fi
+
+echo "No version change needed."
+

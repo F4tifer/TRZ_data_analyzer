@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="card" style="max-width: min(1100px, 100%);">
+  <div class="shell-header">
+    <p class="shell-eyebrow">MySQL load</p>
+    <h1 class="shell-title">SQL Preview — run {{ run_id }}</h1>
+  </div>
+  {% if not_mysql %}
+  <p class="callout callout-error">This run is not MySQL-based, so no DB SQL query is used.</p>
+  <p><button type="button" class="btn-secondary" onclick='location.assign({{ back_href|tojson }})'>{{ back_label }}</button></p>
+  {% else %}
+  <p class="muted">Matches <code>app.db_search.search_generic</code> used during analysis (date + limit). T3W1 test columns are expanded from <code>INFORMATION_SCHEMA</code> at runtime.</p>
+  <pre class="sql-preview-block" id="mysql-sql-pre">{{ sql_text }}</pre>
+  <p style="margin-top: 1rem;">
+    <button type="button" class="btn-secondary" id="copy-mysql-sql">Copy</button>
+    <button type="button" class="btn-secondary" style="margin-left: 0.75rem;" onclick='location.assign({{ back_href|tojson }})'>{{ back_label }}</button>
+  </p>
+  {% endif %}
+</section>
+{% endblock %}

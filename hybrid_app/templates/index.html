@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% from "macros/ui.html" import info_tip %}
+{% block content %}
+<section class="card panel">
+  <div class="shell-header">
+    <p class="shell-eyebrow">Run entry overview</p>
+    <h1 class="shell-title">Start Analysis</h1>
+  </div>
+  <p class="kpi-row-title" style="margin-top: var(--ui-space-3);">Configuration {{ info_tip("Data source drives Step 2: file path, archive upload, or MySQL (credentials in dialog; optional row cap). Step 3: optional YYYYMMDD date filter for folders or DB. Submit creates a run visible on the Dashboard.") }}</p>
+  <p class="helper-text"><strong>1)</strong> Select a data source. <strong>2)</strong> Fill in only the fields that apply. <strong>3)</strong> Date fields are always visible.</p>
+  <form id="start-analysis" method="post" action="/runs" class="grid" enctype="multipart/form-data">
+    <div style="grid-column: 1 / -1;">
+      <p class="kpi-row-title" style="margin-bottom: 6px;">Step 1 - Data source</p>
+      <label>
+        Data source
+        <select name="data_source" id="data-source" aria-describedby="src-help" required>
+          <option value="" selected disabled>Select data source...</option>
+          <option value="files">Files (logs path)</option>
+          <option value="upload">Upload archive (.zip/.tar/.tar.gz)</option>
+          <option value="mysql">MySQL / MariaDB</option>
+        </select>
+      </label>
+      <p id="src-help" class="muted" style="margin: 6px 0 0;">After you choose a source, only the relevant fields are shown below.</p>
+    </div>
+
+    <div id="source-setup-section" style="grid-column: 1 / -1;" hidden>
+      <p class="kpi-row-title" id="step2-title" style="margin-bottom: 6px;">Step 2 - Source setup (Files)</p>
+      <div id="files-only" class="grid" style="grid-column: 1 / -1; gap: inherit;">
+        <label>
+          Log path
+          <input type="text" name="path" id="path-input" placeholder="/path/to/FTP_SYNC" autocomplete="off">
+        </label>
+        <div class="form-actions" style="grid-column: 1 / -1; gap: 8px;">
+          <button type="button" class="btn-secondary" id="btn-pick-folder">Browse folder...</button>
+          <button type="button" class="btn-secondary" id="btn-paste-path">Paste path</button>
+          <input type="file" id="path-folder-input" webkitdirectory directory multiple hidden />
+        </div>
+      </div>
+
+      <div id="mysql-only" class="grid" style="grid-column: 1 / -1; gap: 0.5rem;" hidden>
+        <label style="margin:0;">
+          Max DB rows (query limit)
+          <input
+            type="number"
+            name="mysql_row_limit"
+            id="mysql-row-limit"
+            min="1"
+            max="20000000"
+            step="1"
+            value="500000"
+            inputmode="numeric"
+            autocomplete="off"
+          />
+        </label>
+      </div>
+
+      <div id="upload-only" class="grid" style="grid-column: 1 / -1; gap: inherit;" hidden>
+        <label>
+          Archive file
+          <input type="file" name="upload_archive" id="upload-archive-input" accept=".zip,.tar,.tar.gz,.tgz,application/zip,application/x-tar,application/gzip" />
+        </label>
+      </div>
+    </div>
+
+    <div style="grid-column: 1 / -1;">
+      <p class="kpi-row-title" style="margin-bottom: 6px;">Step 3 - Date filter (optional)</p>
+      <div class="grid">
+        <label>
+          Date from (YYYYMMDD)
+          <input type="text" name="date_from_ymd" placeholder="20260101" autocomplete="off">
+        </label>
+        <label>
+          Date to (YYYYMMDD)
+          <input type="text" name="date_to_ymd" placeholder="20260131" autocomplete="off">
+        </label>
+      </div>
+    </div>
+
+    <input type="hidden" name="db_profile" id="mysql-db-profile-hidden" value="pegatron" />
+    <input type="hidden" name="db_base_url" id="mysql-db-base-url-hidden" value="https://pegatron-db.corp.sldev.cz/" />
+
+    <div class="form-actions panel-actions" style="grid-column: 1 / -1; flex-wrap: wrap; gap: 8px; align-items: center;">
+      <button type="submit" id="btn-run" class="btn-primary">Run analysis</button>
+      <button type="button" class="btn-secondary" id="btn-db-login" hidden>Database login...</button>
+    </div>
+    <p class="next-step" style="grid-column: 1 / -1; margin-top: 0;"><strong>What next:</strong> after submit, open Dashboard and continue in Detail/Analysis.</p>
+
+    <dialog id="db-auth-dialog" class="db-auth-dialog" aria-labelledby="db-dialog-title">
+      <div class="db-auth-dialog__inner">
+        <h2 id="db-dialog-title" style="margin-top: 0;">Database login</h2>
+        <p class="muted">Enter MySQL credentials (PyMySQL). <strong>Pegatron</strong> = FATP + T3W1 (default DB <code>pegatron-db</code>). <strong>Manufacturing / PCB</strong> = host <code>manufacturing-db.corp.sldev.cz</code>, default DB <code>t3w1</code>, date filters via <code>end_test</code>.</p>
+        <label>
+          Database type
+          <select id="db-profile-select" aria-describedby="db-dialog-title">
+            <option value="pegatron">Pegatron (FATP + T3W1)</option>
+            <option value="manufacturing">Manufacturing / PCB (T3W1, end_test)</option>
+          </select>
+        </label>
+        <label>
+          URL / host
+          <input
+            type="url"
+            id="db-url-input"
+            value="https://pegatron-db.corp.sldev.cz/"
+            autocomplete="off"
+          />
+        </label>
+        <label>
+          Username
+          <input type="text" name="db_username" id="db-user-input" autocomplete="username" />
+        </label>
+        <label>
+          Password
+          <input type="password" name="db_password" id="db-pass-input" autocomplete="current-password" />
+        </label>
+        <div class="form-actions" style="justify-content: flex-end; gap: 8px;">
+          <button type="button" class="btn-secondary" id="db-dialog-cancel">Cancel</button>
+          <button type="button" id="db-dialog-ok">Apply</button>
+        </div>
+      </div>
+    </dialog>
+  </form>
+</section>
+
+{% endblock %}

@@ -1,0 +1,174 @@
+{
+  "BLE_RSSI_Check": [
+    -57.0,
+    -35.0
+  ],
+  "BT_RSSI_check_value": [
+    -57.0,
+    -35.0
+  ],
+  "Charging_USB_Current_Check": [
+    160.0,
+    220.0
+  ],
+  "LED_R_Itesity": [
+    44700.0,
+    79800.0
+  ],
+  "final_tropic_certdev_read_error_number": [
+    1.0,
+    0.0
+  ],
+  "final_tropic_certdev_write_error_number": [
+    1.0,
+    0.0
+  ],
+  "final_tropic_certfido_read_error_number": [
+    1.0,
+    0.0
+  ],
+  "final_tropic_certfido_write_error_number": [
+    1.0,
+    0.0
+  ],
+  "final_tropic_certtropic_read_error_number": [
+    1.0,
+    0.0
+  ],
+  "final_tropic_check_lock_error_number": [
+    1.0,
+    0.0
+  ],
+  "final_tropic_check_lock_response": [
+    1.0,
+    0.0
+  ],
+  "final_tropic_command_send_error_number": [
+    1.0,
+    0.0
+  ],
+  "final_tropic_get_credentials_error_number": [
+    1.0,
+    0.0
+  ],
+  "final_tropic_get_fidomask_error_number": [
+    1.0,
+    0.0
+  ],
+  "final_tropic_handshake_error_number": [
+    1.0,
+    0.0
+  ],
+  "final_tropic_id_read_error_number": [
+    1.0,
+    0.0
+  ],
+  "final_tropic_id_response": [
+    1.0,
+    0.0
+  ],
+  "final_tropic_keyfido_read_error_number": [
+    1.0,
+    0.0
+  ],
+  "final_tropic_lock_error_number": [
+    1.0,
+    0.0
+  ],
+  "final_tropic_pair_error_number": [
+    1.0,
+    0.0
+  ],
+  "Battery_level_check": [
+    0.0,
+    100.0
+  ],
+  "BLE MAC Get": [
+    0.0,
+    100.0
+  ],
+  "BLE MAC get": [
+    0.0,
+    100.0
+  ],
+  "BLE_FW_Version": [
+    0.0,
+    0.0
+  ],
+  "BLE_FW_Vesio": [
+    0.0,
+    100.0
+  ],
+  "Display_B_Itesity03": [
+    60421.4,
+    82258.6
+  ],
+  "Display_G_Itesity03": [
+    65138.8,
+    86364.2
+  ],
+  "Display_R_Itesity03": [
+    44463.6,
+    68329.4
+  ],
+  "LED_B_Itesity03": [
+    59000.0,
+    94600.0
+  ],
+  "LED_G_Itesity": [
+    50000.0,
+    82300.0
+  ],
+  "final_optiga_certdev_read_error_number": [
+    -0.0,
+    0.0
+  ],
+  "final_optiga_certdev_write_error_number": [
+    0.0,
+    0.0
+  ],
+  "final_optiga_certfido_read_error_number": [
+    0.0,
+    0.0
+  ],
+  "final_optiga_certfido_write_error_number": [
+    0.0,
+    0.0
+  ],
+  "final_optiga_certinf_read_error_number": [
+    0.0,
+    0.0
+  ],
+  "final_optiga_check_lock_error_number": [
+    0.0,
+    0.0
+  ],
+  "final_optiga_check_lock_response": [
+    0.0,
+    0.0
+  ],
+  "final_optiga_id_read_error_number": [
+    0.0,
+    0.0
+  ],
+  "final_optiga_id_response": [
+    0.0,
+    0.0
+  ],
+  "final_optiga_keyfido_read_error_number": [
+    0.0,
+    0.0
+  ],
+  "final_optiga_keyfido_write_error_number": [
+    0.0,
+    0.0
+  ],
+  "final_optiga_lock_error_number": [
+    0.0,
+    0.0
+  ],
+  "final_optiga_pair_error_number": [
+    0.0,
+    0.0
+  ]
+}

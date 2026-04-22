@@ -1,0 +1,26 @@
+{% if error %}
+<p class="callout">{{ error }}</p>
+{% elif blocks %}
+<p class="muted" style="margin-top: 1rem;">Found SN: <strong>{{ sn_display }}</strong> - blocks by tester/station:</p>
+<form method="get" action="/runs/{{ run_id }}/metadata-sn-export" style="margin-top: 0.5rem;">
+  <input type="hidden" name="sn" value="{{ sn_query }}" />
+  <button type="submit" class="btn-secondary">Export SN CSV</button>
+</form>
+{% for block in blocks %}
+<section class="card sn-meta-block" style="margin-top: 1rem;">
+  <h3 style="margin-top: 0; font-size: 1rem;">{{ block.label }}</h3>
+  <table>
+    <thead><tr><th>Field</th><th>Value</th></tr></thead>
+    <tbody>
+      {% for key, value in block.meta.items() %}
+      <tr><td>{{ key }}</td><td>{{ value }}</td></tr>
+      {% else %}
+      <tr><td colspan="2">No fields.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endfor %}
+{% else %}
+<p class="muted">No results.</p>
+{% endif %}

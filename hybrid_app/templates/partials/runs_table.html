@@ -1,0 +1,111 @@
+<div class="table-scroll">
+<table class="runs-table runs-table-compact">
+  {% if enable_multi_select %}
+  <colgroup>
+    <col style="width:22px;max-width:22px" />
+    <col style="width:14%" />
+    <col style="width:9%" />
+    <col style="width:9%" />
+    <col style="width:8%" />
+    <col style="width:7%" />
+    <col style="width:7%" />
+    <col style="width:22%" />
+    <col />
+  </colgroup>
+  {% endif %}
+  <thead>
+    <tr>
+      {% if enable_multi_select %}
+      <th class="runs-col-checkbox">
+        <input type="checkbox" id="multi-run-select-all" aria-label="Select all visible runs" />
+      </th>
+      {% endif %}
+      <th class="runs-col-created">Created</th>
+      <th class="runs-col-source">Source</th>
+      <th class="runs-col-status">Status</th>
+      <th class="runs-col-total">Total units</th>
+      <th class="runs-col-yield">Yield</th>
+      <th class="runs-col-warnings" scope="col">Warnings</th>
+      <th class="runs-col-actions">Actions</th>
+      <th class="runs-col-path">Path</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for run in runs %}
+    <tr data-run-id="{{ run.id }}">
+      {% if enable_multi_select %}
+      <td class="runs-col-checkbox">
+        <input
+          type="checkbox"
+          class="multi-run-checkbox"
+          data-role="multi-run"
+          value="{{ run.id }}"
+          aria-label="Select run {{ run.id }}"
+        />
+      </td>
+      {% endif %}
+      <td class="runs-col-created" title="{{ run.created_at }}">{{ run.created_at }}</td>
+      <td class="runs-col-source">
+        {% if run.request.data_source|lower == 'mysql' %}
+        <button
+          type="button"
+          class="status-badge status-source-mysql runs-source-sql-link"
+          onclick='location.assign({{ ("/runs/" ~ run.id ~ "/mysql-sql?return=/dashboard")|tojson }})'
+          title="Show SQL queries loading data from DB (preview)"
+          aria-label="SQL query preview"
+        >MYSQL</button>
+        {% else %}
+        <span class="status-badge status-source-{{ run.request.data_source|lower }}">{{ run.request.data_source }}</span>
+        {% endif %}
+      </td>
+      <td class="runs-col-status">
+        {% if run.status|lower == 'failed' %}
+        <button
+          type="button"
+          class="status-badge status-failed run-fail-open-btn"
+          data-error='{{ (run.error or "")|tojson }}'
+          title="Show error log"
+          aria-label="Show error log"
+        >FAILED</button>
+        {% else %}
+        <span class="status-badge status-{{ run.status|lower }}">{{ run.status }}</span>
+        {% endif %}
+      </td>
+      <td class="runs-col-total">{{ run.summary.total_rows if run.summary else "-" }}</td>
+      <td class="runs-col-yield">{% if run.summary %}{{ run.summary.yield_pct }}%{% else %}-{% endif %}</td>
+      <td class="runs-col-warnings">{{ run.warnings|length if run.warnings else 0 }}</td>
+      <td class="run-actions runs-col-actions">
+        <button type="button" class="row-action" onclick='location.assign({{ ("/runs/" ~ run.id)|tojson }})' title="Open detail" aria-label="Open detail">Detail</button>
+        <button type="button" class="row-action" onclick='location.assign({{ ("/runs/" ~ run.id ~ "/export?mode=full&export_type=detail&status_filter=all")|tojson }})' title="Export CSV" aria-label="Export CSV">Export</button>
+        <button
+          type="button"
+          class="row-action row-action-danger btn-danger"
+          hx-delete="/runs/{{ run.id }}"
+          hx-target="closest tr"
+          hx-swap="delete"
+          hx-confirm="Delete this run and related cache file (.pkl)?"
+          title="Delete run"
+          aria-label="Delete run"
+        >Delete</button>
+      </td>
+      <td class="cell-path runs-col-path" title="{{ run.request.path }}">{{ run.request.path }}</td>
+    </tr>
+    {% else %}
+    <tr>
+      <td colspan="{% if enable_multi_select %}9{% else %}8{% endif %}">No runs found for this filter.</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
+{% if total_pages is defined %}
+<nav class="pagination-bar pagination-bar-compact">
+  {% if page > 1 %}
+  <button type="button" class="pagination-nav-btn" onclick='location.assign({{ (pagination_base ~ "?page=" ~ (page - 1) ~ "&page_size=" ~ page_size|string ~ "&status=" ~ status ~ "&q=" ~ q_encoded)|tojson }})'>← Previous</button>
+  {% endif %}
+  <span class="muted">Page {{ page }} / {{ total_pages }} (total {{ total }} runs)</span>
+  {% if page < total_pages %}
+  <button type="button" class="pagination-nav-btn" onclick='location.assign({{ (pagination_base ~ "?page=" ~ (page + 1) ~ "&page_size=" ~ page_size|string ~ "&status=" ~ status ~ "&q=" ~ q_encoded)|tojson }})'>Next →</button>
+  {% endif %}
+</nav>
+{% endif %}

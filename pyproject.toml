@@ -1,0 +1,41 @@
+[project]
+name = "trezor-log-analyzer"
+version = "0.1.0"
+description = "Trezor LOG Analyzer – analytical tool for manufacturing/test logs and DB data."
+requires-python = ">=3.10"
+readme = "README.md"
+license = { text = "Proprietary" }
+authors = [
+  { name = "Trezor / SatoshiLabs", email = "support@trezor.io" },
+]
+dependencies = [
+  "pandas",
+  "openpyxl",
+  "fastapi",
+  "uvicorn",
+  "jinja2",
+  "python-multipart",
+  "itsdangerous>=2.0.0",
+  "sqlalchemy",
+  "plotly",
+  "numpy",
+  "pymysql",
+  "paramiko",
+  "scikit-learn",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest",
+  "ruff",
+  "mypy",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.mypy]
+python_version = "3.10"
+ignore_missing_imports = true
+

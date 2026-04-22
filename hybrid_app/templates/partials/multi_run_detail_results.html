@@ -1,0 +1,217 @@
+{% if error %}
+<div class="callout callout-error">
+  <strong>Error:</strong> {{ error }}
+  <p class="next-step">Select successful runs on the dashboard and open merged analysis again.</p>
+</div>
+{% else %}
+<section class="card">
+  <div class="shell-header">
+    <p class="shell-eyebrow">Merged analytics</p>
+    <h2 class="shell-title">Selection KPI</h2>
+  </div>
+  {% set fail_rate = ((nok_count / total_count) * 100) if total_count else 0 %}
+  <p class="kpi-row-title">Quality</p>
+  <div class="kpi-grid kpi-grid--5">
+    <button
+      type="button"
+      class="kpi kpi-drilldown-btn"
+      hx-get="/runs/multi-kpi-sn-list?bucket=total"
+      hx-include="#multi-analysis-filter"
+      hx-target="#multi-kpi-drilldown-results"
+      hx-swap="innerHTML"
+    >
+      <div class="kpi-head"><span>Total</span><span class="kpi-icon">#</span></div>
+      <strong>{{ total_count }}</strong>
+      <small class="kpi-sub">Analyzed units (all selected runs)</small>
+    </button>
+    <button
+      type="button"
+      class="kpi kpi-drilldown-btn"
+      hx-get="/runs/multi-kpi-sn-list?bucket=ok"
+      hx-include="#multi-analysis-filter"
+      hx-target="#multi-kpi-drilldown-results"
+      hx-swap="innerHTML"
+    >
+      <div class="kpi-head"><span>OK</span><span class="kpi-icon">+</span></div>
+      <strong>{{ ok_count }}</strong>
+      <small class="kpi-sub">Status OK</small>
+    </button>
+    <button
+      type="button"
+      class="kpi kpi-drilldown-btn"
+      hx-get="/runs/multi-kpi-sn-list?bucket=nok"
+      hx-include="#multi-analysis-filter"
+      hx-target="#multi-kpi-drilldown-results"
+      hx-swap="innerHTML"
+    >
+      <div class="kpi-head"><span>NOK</span><span class="kpi-icon">!</span></div>
+      <strong>{{ nok_count }}</strong>
+      <small class="kpi-sub">Status NOK</small>
+    </button>
+    <div class="kpi">
+      <div class="kpi-head"><span>Yield</span><span class="kpi-icon">%</span></div>
+      <strong>{{ "%.2f"|format(yield_pct) }}%</strong>
+      <small class="kpi-sub">First-pass quality (merged)</small>
+      {% if yield_pct >= 95 %}
+      <span class="kpi-badge kpi-badge-success">Healthy</span>
+      {% elif yield_pct >= 85 %}
+      <span class="kpi-badge kpi-badge-warning">Watch</span>
+      {% else %}
+      <span class="kpi-badge kpi-badge-error">Risk</span>
+      {% endif %}
+    </div>
+    <div class="kpi">
+      <div class="kpi-head"><span>Fail rate</span><span class="kpi-icon">!</span></div>
+      <strong>{{ "%.2f"|format(fail_rate) }}%</strong>
+      <small class="kpi-sub">Share of NOK units</small>
+    </div>
+  </div>
+  <div id="multi-kpi-drilldown-results" class="kpi-drilldown-slot"></div>
+  <p style="margin-top: 12px;">
+    <button type="button" class="btn-secondary" id="multi-analysis-export-link">Export merged selection (CSV)</button>
+  </p>
+</section>
+
+<section class="card">
+  <div class="shell-header">
+    <p class="shell-eyebrow">Failure breakdown</p>
+    <h2 class="shell-title">Top failures</h2>
+  </div>
+  <table>
+    <thead><tr><th>Test</th><th>Count</th></tr></thead>
+    <tbody>
+      {% if top_failures and top_failures|length > 0 %}
+        {% for test, count in top_failures.items() %}
+        <tr>
+          <td>
+            <button
+              type="button"
+              class="btn-secondary"
+              hx-get="/runs/multi-failure-sn-list?test={{ test|urlencode }}"
+              hx-include="#multi-analysis-filter"
+              hx-target="#multi-failure-drilldown-results"
+              hx-swap="innerHTML"
+              title="Show SN list for this failure"
+            >
+              {{ test }}
+            </button>
+          </td>
+          <td>{{ count }}</td>
+        </tr>
+        {% endfor %}
+      {% else %}
+        <tr><td colspan="2">
+          <div class="empty-state">
+            <p class="muted">No NOK failures in this merged selection.</p>
+          </div>
+        </td></tr>
+      {% endif %}
+    </tbody>
+  </table>
+  <div id="multi-failure-drilldown-results" class="callout" style="margin-top: 12px;">
+    <p class="muted">Click a failure name to list units (SN) by run.</p>
+  </div>
+</section>
+
+<section class="card">
+  <div class="shell-header">
+    <p class="shell-eyebrow">Charts</p>
+    <h2 class="shell-title">Charts</h2>
+  </div>
+  <p class="muted" style="margin-bottom: 8px;">Use <strong>⛶</strong> in chart corner for fullscreen (ESC to exit).</p>
+  {% if charts and (charts.get('pareto') or charts.get('pie')) %}
+    <textarea id="run-detail-charts-json" hidden readonly class="run-detail-charts-json" aria-hidden="true">{{ charts|default({})|tojson }}</textarea>
+    <div id="chart-render-fallback" class="empty-state chart-fallback is-loading" role="status" aria-live="polite">
+      <p class="muted chart-fallback-loading">Loading charts...</p>
+      <p class="muted chart-fallback-error" hidden>Charts could not be rendered.</p>
+      <p class="next-step chart-fallback-error" hidden>Next step: refresh the page or adjust filters.</p>
+    </div>
+    <div class="chart-panel" data-chart-panel>
+      <button type="button" class="chart-fullscreen-btn" title="Fullscreen" aria-label="Fullscreen">⛶</button>
+      <div id="pareto-chart" class="chart-plot-area" style="min-height: 380px;"></div>
+    </div>
+    <div class="chart-panel" data-chart-panel style="margin-top: 16px;">
+      <button type="button" class="chart-fullscreen-btn" title="Fullscreen" aria-label="Fullscreen">⛶</button>
+      <div id="pie-chart" class="chart-plot-area" style="min-height: 380px;"></div>
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <p class="muted">
+        <strong>Pareto</strong> and <strong>pie</strong> charts appear only when the current scope contains <strong>NOK</strong> rows.
+        If everything is OK, widen tests/stations or use <strong>Advanced charts</strong> below (histogram / trend work for OK data too).
+      </p>
+    </div>
+  {% endif %}
+</section>
+
+{% if selected_tests and selected_tests|length > 0 %}
+<section class="card">
+  <div class="shell-header">
+    <p class="shell-eyebrow">Advanced charts</p>
+    <h2 class="shell-title">Distribution, trend, scatter, correlation</h2>
+  </div>
+  <p class="muted" style="margin-top: 0;">
+    Same scope as the checkboxes above. Correlation uses <strong>Run ID + SN + Station</strong> when merging different databases.
+  </p>
+  <form
+    class="grid"
+    style="gap: 12px;"
+    hx-get="/runs/multi-charts-extra"
+    hx-target="#multi-extra-charts-out"
+    hx-swap="innerHTML"
+    hx-include="#multi-analysis-filter"
+  >
+    <label style="margin: 0;">
+      Chart type
+      <select name="chart_kind">
+        <option value="hist">Distribution (histogram)</option>
+        <option value="trend">Trend over time</option>
+        <option value="scatter_stations">Scatter (per station × test)</option>
+      </select>
+    </label>
+    <label style="margin: 0;">
+      Test (histogram / trend / scatter)
+      <select name="param">
+        <option value="">— default from selection —</option>
+        {% for t in selected_tests or [] %}
+        <option value="{{ t|e }}">{{ t }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <div class="form-actions" style="grid-column: 1 / -1; margin: 0;">
+      <button type="submit" class="btn-secondary">Show chart</button>
+    </div>
+  </form>
+  <form
+    class="grid"
+    style="gap: 12px; margin-top: 12px;"
+    hx-get="/runs/multi-charts-extra"
+    hx-target="#multi-extra-charts-out"
+    hx-swap="innerHTML"
+    hx-include="#multi-analysis-filter"
+  >
+    <input type="hidden" name="chart_kind" value="corr" />
+    <label style="margin: 0;">
+      Correlation X
+      <select name="corr_x">
+        {% for t in selected_tests or [] %}
+        <option value="{{ t|e }}" {% if loop.first %}selected{% endif %}>{{ t }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label style="margin: 0;">
+      Correlation Y
+      <select name="corr_y">
+        {% for t in selected_tests or [] %}
+        <option value="{{ t|e }}" {% if loop.index0 == 1 %}selected{% elif (selected_tests|length) == 1 and loop.first %}selected{% endif %}>{{ t }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <div class="form-actions" style="grid-column: 1 / -1; margin: 0;">
+      <button type="submit" class="btn-secondary">Show correlation</button>
+    </div>
+  </form>
+  <div id="multi-extra-charts-out" style="margin-top: 12px;"></div>
+</section>
+{% endif %}
+{% endif %}

@@ -1,0 +1,340 @@
+{
+  "meta": {
+    "type": "Test_Definitions",
+    "description": "Configuration for numeric and functional tests with pass/fail criteria.",
+    "version": "3.2"
+  },
+  "tests": [
+    {
+      "category": "Power_Management",
+      "tests": [
+        {
+          "test_name": "Discharging_USB_Current",
+          "csv_key": "Discharging_BATTERY_CUR",
+          "unit": "mA",
+          "limits": {
+            "min": 95.0,
+            "max": 130.0
+          },
+          "display_name": "Discharging USB Current"
+        },
+        {
+          "test_name": "Discharging_USB_Voltage",
+          "csv_key": "Discharging_BATTERY_V",
+          "unit": "V",
+          "limits": {
+            "min": 3.1,
+            "max": 3.6
+          },
+          "display_name": "Discharging Battery Voltage"
+        },
+        {
+          "test_name": "Battery_Level_Start",
+          "csv_key": "Battery_level_check",
+          "unit": "%",
+          "limits": {
+            "min": 0.0,
+            "max": 100.0
+          },
+          "display_name": "Battery Level at Start"
+        },
+        {
+          "test_name": "Charging_USB_Current",
+          "csv_key": "Charging_USB_Current_Check",
+          "unit": "mA",
+          "limits": {
+            "min": 160.0,
+            "max": 220.0
+          },
+          "display_name": "Charging USB Current"
+        },
+        {
+          "test_name": "Charging_USB_Vbat",
+          "csv_key": "Charging_USB_vbat_Check",
+          "unit": "V",
+          "limits": {
+            "min": 3.1,
+            "max": 3.6
+          },
+          "display_name": "Charging USB Battery Voltage"
+        },
+        {
+          "test_name": "VBUS_Voltage",
+          "csv_key": "Voltage_VBUS",
+          "unit": "V",
+          "limits": {
+            "min": 4.75,
+            "max": 5.25
+          },
+          "display_name": "VBUS Voltage"
+        },
+        {
+          "test_name": "VBUS_Current",
+          "csv_key": "Voltage_VBUS_current",
+          "unit": "A",
+          "limits": {
+            "min": 0.25,
+            "max": 0.35
+          },
+          "display_name": "VBUS Current"
+        },
+        {
+          "test_name": "Charging_QI_Current",
+          "csv_key": "Charging_QI_Current_Check",
+          "unit": "mA",
+          "limits": {
+            "min": 230.0,
+            "max": 330.0
+          },
+          "display_name": "Charging QI Current"
+        },
+        {
+          "test_name": "Charging_QI_Voltage",
+          "csv_key": "Charging_QI_vout_check",
+          "unit": "V",
+          "limits": {
+            "min": 4.75,
+            "max": 5.25
+          },
+          "display_name": "Charging QI Voltage"
+        }
+      ]
+    },
+    {
+      "category": "Thermal_Sensors",
+      "tests": [
+        {
+          "test_name": "Temp_Battery",
+          "csv_key": "Temp_Battery",
+          "unit": "degree",
+          "limits": {
+            "min": 20.0,
+            "max": 45.0
+          },
+          "display_name": "Battery Temperature"
+        },
+        {
+          "test_name": "Temp_PMIC",
+          "csv_key": "Temp_pmic_die",
+          "unit": "degree",
+          "limits": {
+            "min": 20.0,
+            "max": 60.0
+          },
+          "display_name": "PMIC Temperature"
+        },
+        {
+          "test_name": "Temp_WPC",
+          "csv_key": "Temp_WPC",
+          "unit": "degree",
+          "limits": {
+            "min": 20.0,
+            "max": 60.0
+          },
+          "display_name": "WPC Temperature"
+        }
+      ]
+    },
+    {
+      "category": "Connectivity_Signals",
+      "tests": [
+        {
+          "test_name": "BLE_RSSI",
+          "csv_key": "BLE_RSSI_Check",
+          "unit": "DB",
+          "limits": {
+            "min": -57.0,
+            "max": -35.0
+          },
+          "display_name": "BLE Signal Strength (RSSI)"
+        },
+        {
+          "test_name": "Haptic_Frequency",
+          "csv_key": "Haptic_Test",
+          "unit": "Hz",
+          "limits": {
+            "min": 242.0,
+            "max": 270.0
+          },
+          "display_name": "Haptic Feedback Frequency"
+        },
+        {
+          "test_name": "Haptic_RMS",
+          "csv_key": "Haptic_Test_RMS",
+          "unit": "RMS",
+          "limits": {
+            "min": 0.001
+          },
+          "display_name": "Haptic RMS"
+        }
+      ]
+    },
+    {
+      "category": "LED_Indicators_Check",
+      "description": "Primary source: CSV. Fallback: display_*_all.log Zone 02",
+      "tests": [
+        {
+          "test_name": "LED_R_Intensity",
+          "csv_key": "LED_R_Intensity",
+          "unit": "intensity",
+          "limits": {
+            "min": 44700.0,
+            "max": 79800.0
+          },
+          "display_name": "LED Red Intensity"
+        },
+        {
+          "test_name": "LED_R_Raw",
+          "csv_key": "LED_R_value",
+          "unit": "raw",
+          "limits": {
+            "min": 230.0,
+            "max": 256.0
+          },
+          "display_name": "LED Red Raw"
+        },
+        {
+          "test_name": "LED_G_Intensity",
+          "csv_key": "LED_G_Intensity",
+          "unit": "intensity",
+          "limits": {
+            "min": 50000.0,
+            "max": 82300.0
+          },
+          "display_name": "LED Green Intensity"
+        },
+        {
+          "test_name": "LED_G_Raw",
+          "csv_key": "LED_G_value",
+          "unit": "raw",
+          "limits": {
+            "min": 230.0,
+            "max": 256.0
+          },
+          "display_name": "LED Green Raw"
+        },
+        {
+          "test_name": "LED_B_Intensity",
+          "csv_key": "LED_B_Intensity03",
+          "unit": "intensity",
+          "limits": {
+            "min": 59000.0,
+            "max": 94600.0
+          },
+          "display_name": "LED Blue Intensity"
+        },
+        {
+          "test_name": "LED_B_Raw",
+          "csv_key": "LED_B_value",
+          "unit": "raw",
+          "limits": {
+            "min": 210.0,
+            "max": 256.0
+          },
+          "display_name": "LED Blue Raw"
+        }
+      ]
+    },
+    {
+      "category": "Display_RGB_Check",
+      "description": "Primary source: CSV. Fallback: display_*_all.log Zones 01/03",
+      "tests": [
+        {
+          "test_name": "Display_R_Zone1_Intensity",
+          "csv_key": "Display_R_Intensity01",
+          "unit": "intensity",
+          "limits": {
+            "min": 1.0
+          },
+          "display_name": "Display Red Zone 1"
+        },
+        {
+          "test_name": "Display_R_Zone3_Intensity",
+          "csv_key": "Display_R_Intensity03",
+          "unit": "intensity",
+          "limits": {
+            "min": 1.0
+          },
+          "display_name": "Display Red Zone 3"
+        },
+        {
+          "test_name": "Display_G_Zone1_Intensity",
+          "csv_key": "Display_G_Intensity01",
+          "unit": "intensity",
+          "limits": {
+            "min": 400.0
+          },
+          "display_name": "Display Green Zone 1"
+        },
+        {
+          "test_name": "Display_G_Zone3_Intensity",
+          "csv_key": "Display_G_Intensity03",
+          "unit": "intensity",
+          "limits": {
+            "min": 400.0
+          },
+          "display_name": "Display Green Zone 3"
+        },
+        {
+          "test_name": "Display_B_Zone1_Intensity",
+          "csv_key": "Display_B_Intensity01",
+          "unit": "intensity",
+          "limits": {
+            "min": 150.0
+          },
+          "display_name": "Display Blue Zone 1"
+        },
+        {
+          "test_name": "Display_B_Zone3_Intensity",
+          "csv_key": "Display_B_Intensity03",
+          "unit": "intensity",
+          "limits": {
+            "min": 150.0
+          },
+          "display_name": "Display Blue Zone 3"
+        }
+      ]
+    },
+    {
+      "category": "Functional_Boolean_Tests",
+      "tests": [
+        {
+          "test_name": "Button_Test",
+          "csv_key": "Button_Test",
+          "type": "pass_fail",
+          "display_name": "Button Test"
+        },
+        {
+          "test_name": "NFC_Read_Status",
+          "csv_key": "NFC_Read",
+          "type": "pass_fail",
+          "display_name": "NFC Read"
+        },
+        {
+          "test_name": "OTP_Batch_Write_Status",
+          "csv_key": "OTP_Batch_Write",
+          "type": "pass_fail",
+          "display_name": "OTP Batch Write"
+        },
+        {
+          "test_name": "Touch_Point_Test_Status",
+          "csv_key": "TOUCH_TEST_POINT",
+          "type": "pass_fail",
+          "display_name": "Touch Point Test"
+        },
+        {
+          "test_name": "Touch_Vertical_Swipe_Status",
+          "csv_key": "TOUCH_TEST_Vertical",
+          "type": "pass_fail",
+          "display_name": "Touch Vertical Swipe"
+        },
+        {
+          "test_name": "Touch_Horizontal_Swipe_Status",
+          "csv_key": "TOUCH_TEST_Horizontal",
+          "type": "pass_fail",
+          "display_name": "Touch Horizontal Swipe"
+        }
+      ]
+    }
+  ]
+}

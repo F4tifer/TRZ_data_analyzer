@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="card panel">
+  <div class="shell-header">
+    <p class="shell-eyebrow">Analysis window</p>
+    <h1 class="shell-title">Recompute Results</h1>
+  </div>
+  {% if run %}
+  <p class="muted"><strong>Run ID:</strong> {{ run.id }} · <strong>Status:</strong> {{ run.status }}</p>
+  <p><button type="button" class="btn-secondary" onclick='location.assign({{ ("/runs/" ~ run.id)|tojson }})'>← Back to run detail</button></p>
+  {% endif %}
+</section>
+
+<div id="analysis-results">
+  {% include "partials/run_detail_results.html" %}
+</div>
+
+{% if run and run.summary %}
+<section class="card panel" style="margin-top: 16px;">
+  {% set selected_tests = request.query_params.getlist('tests') %}
+  {% set selected_stations = request.query_params.getlist('stations') %}
+  {% set available_tests = selected_tests if selected_tests else run.summary.tests %}
+  <div class="shell-header">
+    <p class="shell-eyebrow">Advanced charts</p>
+    <h2 class="shell-title">Advanced charts</h2>
+  </div>
+  <p class="muted">Charts use the same test/station selection as the current Analysis window and are split into two tabs for clarity.</p>
+  <div class="detail-tabs" role="tablist" aria-label="Advanced charts tabs">
+    <button type="button" class="detail-tab is-active" data-extra-tab="chart-type">Chart type</button>
+    <button type="button" class="detail-tab" data-extra-tab="correlation">Correlation X/Y</button>
+  </div>
+  <section data-extra-panel="chart-type" style="margin-top: 12px;">
+  <form
+    id="extra-charts-form-type"
+    hx-get="/runs/{{ run.id }}/charts-extra"
+    hx-target="#extra-charts-out"
+    hx-swap="innerHTML"
+  >
+    {% for test_name in selected_tests %}
+    <input type="hidden" name="tests" value="{{ test_name }}">
+    {% endfor %}
+    {% for station_name in selected_stations %}
+    <input type="hidden" name="stations" value="{{ station_name }}">
+    {% endfor %}
+    <div class="grid">
+      <label>
+        Chart type
+        <select name="chart_kind">
+          <option value="hist">Distribution (histogram)</option>
+          <option value="trend">Trend over time</option>
+          <option value="scatter">Scatter (station x test, index vs Value)</option>
+        </select>
+      </label>
+      <label>
+        Parameter (histogram / trend)
+        <select name="param">
+          <option value="">- default from selection -</option>
+          {% for t in available_tests %}
+          <option value="{{ t }}">{{ t }}</option>
+          {% endfor %}
+        </select>
+      </label>
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="btn-primary">Show chart</button>
+    </div>
+  </form>
+  </section>
+  <section data-extra-panel="correlation" hidden style="margin-top: 12px;">
+    <form
+      id="extra-charts-form-corr"
+      hx-get="/runs/{{ run.id }}/charts-extra"
+      hx-target="#extra-charts-out"
+      hx-swap="innerHTML"
+    >
+      <input type="hidden" name="chart_kind" value="corr">
+      {% for test_name in selected_tests %}
+      <input type="hidden" name="tests" value="{{ test_name }}">
+      {% endfor %}
+      {% for station_name in selected_stations %}
+      <input type="hidden" name="stations" value="{{ station_name }}">
+      {% endfor %}
+      <div class="grid">
+        <label>
+          Correlation - axis X
+          <select name="corr_x">
+            {% for t in available_tests %}
+            <option value="{{ t }}" {% if loop.first %}selected{% endif %}>{{ t }}</option>
+            {% endfor %}
+          </select>
+        </label>
+        <label>
+          Correlation - axis Y
+          <select name="corr_y">
+            {% for t in available_tests %}
+            <option value="{{ t }}" {% if loop.index0 == 1 %}selected{% elif available_tests|length == 1 and loop.first %}selected{% endif %}>{{ t }}</option>
+            {% endfor %}
+          </select>
+        </label>
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn-primary">Show correlation</button>
+      </div>
+    </form>
+  </section>
+  <div id="extra-charts-out" class="callout" style="margin-top: 12px;">
+    <p class="muted">Select a tab, set parameters, and press <strong>Show chart</strong>.</p>
+  </div>
+</section>
+{% endif %}
+
+{% endblock %}

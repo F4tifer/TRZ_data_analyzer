@@ -1,0 +1,50 @@
+{% if error %}
+<div class="callout callout-error">
+  <p class="muted">{{ error }}</p>
+</div>
+{% else %}
+<div class="shell-header" style="margin-bottom: 8px;">
+  <p class="shell-eyebrow">Failure detail (merged)</p>
+  <h3 class="shell-title" style="font-size: 17px;">{{ test }}</h3>
+  <p class="muted" style="margin-top: 6px;">Units found (NOK): <strong>{{ total_rows }}</strong></p>
+</div>
+<div class="table-scroll">
+  <table class="runs-table">
+    <thead>
+      <tr>
+        <th>Run ID</th>
+        <th>SN</th>
+        <th>Station</th>
+        <th>Value</th>
+        <th>Error code + Description</th>
+        <th>Date/time</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% if rows and rows|length > 0 %}
+        {% for row in rows %}
+        <tr>
+          <td>{{ row.run_id }}</td>
+          <td>{{ row.sn }}</td>
+          <td>{{ row.station }}</td>
+          <td>{{ row.value }}</td>
+          <td>{{ row.error_info or "—" }}</td>
+          <td>{{ row.raw_date }}</td>
+          <td><span class="status-badge status-failed">{{ row.status }}</span></td>
+        </tr>
+        {% endfor %}
+      {% else %}
+      <tr>
+        <td colspan="7">
+          <p class="muted" style="margin: 0;">No NOK units were found for this failure in the current selection.</p>
+        </td>
+      </tr>
+      {% endif %}
+    </tbody>
+  </table>
+</div>
+{% if truncated %}
+<p class="muted" style="margin-top: 8px;">Showing first 500 rows out of {{ total_rows }}.</p>
+{% endif %}
+{% endif %}
