@@ -10,6 +10,9 @@ WORKDIR /app
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
+    wireguard-tools \
+    iproute2 \
+    iptables \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt /app/requirements.txt
@@ -19,6 +22,9 @@ COPY . /app
 
 RUN mkdir -p /data/artifacts
 
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
 EXPOSE 8000
 
-CMD ["sh", "-c", "uvicorn hybrid_app.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
+CMD ["/entrypoint.sh"]
