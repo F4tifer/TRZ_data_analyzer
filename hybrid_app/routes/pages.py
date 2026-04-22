@@ -7,6 +7,7 @@ from fastapi.templating import Jinja2Templates
 from hybrid_app.schemas import (
     MANUFACTURING_DEFAULT_BASE_URL,
     RunRequest,
+    RunResult,
     mysql_display_path_from_base_url,
 )
 from hybrid_app.services.pending_db_password import stash as stash_db_password
