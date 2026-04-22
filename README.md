@@ -1,6 +1,6 @@
-# Trezor LOG Analyzer (Hybrid App)
+# Trezor LOG Analyzer 
 
-Hybrid web application for manufacturing/test log analytics and MySQL/MariaDB data analysis.
+Web application for manufacturing/test log analytics and MySQL/MariaDB data analysis.
 
 ## Runtime
 
